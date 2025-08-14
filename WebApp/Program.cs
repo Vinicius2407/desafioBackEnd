@@ -3,6 +3,7 @@ using Engine.Singleton;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Engine.Interfaces;
+using Models.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,22 +49,48 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+try
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<DBApp>();
+    // Codigo para geração de migration
+    db.Database.Migrate();
+
+    if (!db.Currencies.Any())
+    {
+        var currencies = new List<Currency>
+        {
+            new(){
+                Code = "BRL",
+                Name = "Real",
+                Symbol = "R$"
+            },
+            new(){
+                Code = "USD",
+                Name = "Dolár",
+                Symbol = "$"
+            },
+            new(){
+                Code = "EUR",
+                Name = "Euro",
+                Symbol = "€"
+            }
+        };
+
+        db.Currencies.AddRange(currencies);
+        db.SaveChanges();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"{ex.Message}");
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    try
-    {
-        // Codigo para geração de migration em desenvolvimento
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<DBApp>();
-        db.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
-    }
 }
 
 app.UseHttpsRedirection();
