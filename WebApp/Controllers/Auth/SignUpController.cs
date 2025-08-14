@@ -1,11 +1,12 @@
-﻿using Engine.Services;
-using Engine.Helpers;
+﻿using Engine.Helpers;
+using Engine.Services;
 using Microsoft.AspNetCore.Mvc;
+using Models.DTOs.User;
 
 namespace WebApp.Controllers.Auth;
 [Route("api/[controller]")]
 [ApiController]
-public class SignUpController : ControllerBase
+public class SignUpController : ApiController
 {
     private readonly IConfiguration _config;
     private readonly UserService _userService;
@@ -20,12 +21,15 @@ public class SignUpController : ControllerBase
     public async Task<IActionResult> SignUp([FromBody] Models.DTOs.User.CreateUserDto createUserDto)
     {
         if (createUserDto == null)
-            return BadRequest("Dados do usuário não podem ser nulos.");
+            return Error(400, "Dados do usuário devem ser preenchidos.");
+
+        if (_userService.GetUserByEmailAsync(createUserDto.Email).Result != null)
+            return Error(400, "Usuario com email ja existente!");
 
         var userViewModel = await _userService.SignUp(createUserDto);
 
         if (userViewModel.HasErrors)
-            return BadRequest(new { userViewModel.Errors });
+            return Error(400, string.Join(",", userViewModel.Errors));
 
         var jwtToken = JWTHelper.GenerateToken(userViewModel.Id, userViewModel.Email, _config);
 
