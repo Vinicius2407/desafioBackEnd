@@ -13,6 +13,10 @@ public class User : BaseEntity, ISoftDelete
     public string Email { get; set; } = string.Empty;
     public string Document { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public Wallet Wallet { get; set; } = new Wallet();
+    public List<Bet> Bets { get; set; } = new List<Bet>();
+
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
     public long? DeletedBy { get; set; }
