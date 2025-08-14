@@ -1,16 +1,28 @@
 using Microsoft.EntityFrameworkCore;
 using Engine.Singleton;
-using Engine;
-using Microsoft.AspNetCore.Authentication.JwtBearer; // Adicione esta linha
 using Microsoft.IdentityModel.Tokens;                // Adicione esta linha
-using System.Text;                                   // Adicione esta linha
+using System.Text;
+using System.Reflection;
+using Engine.Interfaces;                                   // Adicione esta linha
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configuração do Entity Framework com PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DBApp");
 builder.Services.AddDbContext<DBApp>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Engine")));
 
+
+// Services
+var assembly = typeof(Engine.Services.UserService).Assembly;
+var serviceTypes = assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && typeof(IService).IsAssignableFrom(t));
+
+foreach (var type in serviceTypes)
+{
+    builder.Services.AddScoped(type);
+}
+
+
+// Configuração da autenticação JWT
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
@@ -24,20 +36,18 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = config["Jwt:Issuer"],
             ValidAudience = config["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(config["Jwt:Key"])
+                Encoding.UTF8.GetBytes(config["Jwt:SecretKey"])
             )
         };
     });
 
-builder.Services.AddControllers();
 
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,9 +55,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

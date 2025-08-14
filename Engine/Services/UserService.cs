@@ -1,28 +1,30 @@
-﻿using Engine.Singleton;
+﻿using Engine.Interfaces;
+using Engine.Singleton;
+using Microsoft.EntityFrameworkCore;
 using Models.DTOs.User;
 using Models.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Engine.Services;
-public class UserService
+public class UserService : IService
 {
-    public UserService() { }
+    private readonly DBApp _context;
+    public UserService(DBApp context)
+    {
+        _context = context;
+    }
 
-    public static UserViewModel SignUp(CreateUserDto createUserDto)
+    public async Task<UserViewModel> SignUp(CreateUserDto createUserDto)
     {
         if (createUserDto == null)
             throw new ArgumentNullException(nameof(createUserDto), "Dados do usuário não podem ser nulos.");
 
+        if (GetUserByEmail(createUserDto.Email).Result != null)
+            return new UserViewModel { Errors = new List<string> { "Email já em uso!" } };
+
         var passwordHash = Engine.Helpers.PasswordHelper.HashPassword(createUserDto.Password);
 
-        var user = new Models.Model.User
+        var user = new User
         {
-            Id = createUserDto.Id,
             Name = createUserDto.Name,
             Password = passwordHash,
             Email = createUserDto.Email,
@@ -30,18 +32,22 @@ public class UserService
             PhoneNumber = createUserDto.PhoneNumber
         };
 
-        return SaveUser(user);
+        return await SaveUser(user);
     }
 
-    private static UserViewModel SaveUser(User user)
+    public async Task<User?> GetUserByEmail(string email)
     {
-        using var contexto = new DBApp();
+        return await _context.Users.FirstOrDefaultAsync(x => string.Equals(x.Email, email));
+    }
+
+    private async Task<UserViewModel> SaveUser(User user)
+    {
 
         if (user.Id == 0)
-            contexto.Users.Add(user);
+            _context.Users.Add(user);
         else
         {
-            var existingUser = contexto.Users.Find(user.Id);
+            var existingUser = await _context.Users.FindAsync(user.Id);
 
             if (existingUser == null)
                 return new UserViewModel
@@ -49,10 +55,10 @@ public class UserService
                     Errors = new List<string> { "Usuário não encontrado para atualização." }
                 };
 
-            contexto.Entry(existingUser).CurrentValues.SetValues(user);
+            _context.Entry(existingUser).CurrentValues.SetValues(user);
         }
 
-        contexto.SaveChanges();
+        await _context.SaveChangesAsync();
         var userViewModel = new UserViewModel
         {
             Id = user.Id,

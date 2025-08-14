@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 namespace Models.DTOs.User;
 public class CreateUserDto
 {
-    public long Id { get; set; } = 0;
-
     [Required(ErrorMessage = "Nome é obrigatório")]
     [StringLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres")]
     public string Name { get; set; } = string.Empty;
