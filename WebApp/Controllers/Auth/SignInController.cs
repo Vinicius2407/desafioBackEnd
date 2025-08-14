@@ -1,9 +1,10 @@
 ﻿using Engine.Services;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.User;
-using WebApp.Controllers;
 using System.Reflection.Metadata.Ecma335;
 using Engine.Helpers;
+using WebApp.Controllers.Base;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers.Auth;
 [Route("api/[controller]")]
@@ -26,7 +27,7 @@ public class SignInController : ApiController
 
         if (user == null) return Error(401, "Usuario ou Senha incorretos.");
 
-        if (!Engine.Helpers.PasswordHelper.VerifyPassword(loginUserDto.Password, user.Password))
+        if (!Engine.Helpers.PasswordHelper.VerifyPassword(hashedPassword: user.Password, password: loginUserDto.Password))
             return Error(401, "Usuario ou Senha incorretos.");
 
         var jwtToken = JWTHelper.GenerateToken(user.Id, user.Email, _config);

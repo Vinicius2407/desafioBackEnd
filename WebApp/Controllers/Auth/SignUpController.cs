@@ -1,7 +1,9 @@
 ﻿using Engine.Helpers;
 using Engine.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.User;
+using WebApp.Controllers.Base;
 
 namespace WebApp.Controllers.Auth;
 [Route("api/[controller]")]
@@ -18,7 +20,7 @@ public class SignUpController : ApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> SignUp([FromBody] Models.DTOs.User.CreateUserDto createUserDto)
+    public async Task<IActionResult> SignUp([FromBody] CreateUserDto createUserDto)
     {
         if (createUserDto == null)
             return Error(400, "Dados do usuário devem ser preenchidos.");
