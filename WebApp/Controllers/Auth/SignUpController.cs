@@ -1,4 +1,5 @@
 ﻿using Engine.Services;
+using Engine.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp.Controllers.Auth;
@@ -6,21 +7,27 @@ namespace WebApp.Controllers.Auth;
 [ApiController]
 public class SignUpController : ControllerBase
 {
-    public SignUpController() { }
+    private readonly IConfiguration _config;
+    private readonly UserService _userService;
+    public SignUpController(UserService userService, IConfiguration config)
+    {
+        _config = config;
+        _userService = userService;
+    }
 
     [HttpPost]
-    public IActionResult SignUp([FromBody] Models.DTOs.User.CreateUserDto createUserDto)
+    public async Task<IActionResult> SignUp([FromBody] Models.DTOs.User.CreateUserDto createUserDto)
     {
         if (createUserDto == null)
             return BadRequest("Dados do usuário não podem ser nulos.");
 
-        var userViewModel = UserService.SignUp(createUserDto);
+        var userViewModel = await _userService.SignUp(createUserDto);
 
         if (userViewModel.HasErrors)
             return BadRequest(new { userViewModel.Errors });
 
-        var jtwToken = Engine.Helpers.GenerateToken(userViewModel);
+        var jwtToken = JWTHelper.GenerateToken(userViewModel.Id, userViewModel.Email, _config);
 
-        return ;
+        return Created("", new { accessToken = jwtToken });
     }
 }

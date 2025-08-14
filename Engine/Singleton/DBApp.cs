@@ -4,7 +4,7 @@ using Models.Model;
 namespace Engine.Singleton;
 public class DBApp : DbContext
 {
-    public DBApp() : base() { }
+    public DBApp(DbContextOptions<DBApp> options) : base(options) { }
 
     public DbSet<User> Users { get; set; } = null!;
 
