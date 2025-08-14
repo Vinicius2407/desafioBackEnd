@@ -11,6 +11,7 @@ public class SignUpController : ControllerBase
     private readonly UserService _userService;
     public SignUpController(UserService userService, IConfiguration config)
     {
+        // Configuração do JWT e Dependencia do UserService
         _config = config;
         _userService = userService;
     }

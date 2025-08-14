@@ -1,18 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using Engine.Singleton;
-using Microsoft.IdentityModel.Tokens;                // Adicione esta linha
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Reflection;
-using Engine.Interfaces;                                   // Adicione esta linha
+using Engine.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do Entity Framework com PostgreSQL
+// Adicionando configuração do banco dentro do contexto do DBApp
 var connectionString = builder.Configuration.GetConnectionString("DBApp");
 builder.Services.AddDbContext<DBApp>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Engine")));
 
 
 // Services
+// Modelo dinamico para carregar as Services
 var assembly = typeof(Engine.Services.UserService).Assembly;
 var serviceTypes = assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && typeof(IService).IsAssignableFrom(t));
 
@@ -55,6 +55,7 @@ if (app.Environment.IsDevelopment())
 
     try
     {
+        // Codigo para geração de migration em desenvolvimento
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DBApp>();
         db.Database.Migrate();

@@ -7,6 +7,7 @@ public class DBApp : DbContext
     public DBApp(DbContextOptions<DBApp> options) : base(options) { }
 
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Currency> Currencies { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
