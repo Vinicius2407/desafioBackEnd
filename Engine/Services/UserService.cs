@@ -55,7 +55,13 @@ public class UserService : IService
                 Id = wallet.Id,
                 BalanceAvailable = wallet.BalanceAvailable,
                 BalanceBlocked = wallet.BalanceBlocked,
-                Currency = wallet.Currency,
+                Currency = new Models.DTOs.Currency.CurrencyViewModel
+                {
+                    Id = wallet.Currency.Id,
+                    Name = wallet.Currency.Name,
+                    Code = wallet.Currency.Code,
+                    Symbol = wallet.Currency.Symbol
+                },
             },
         };
 
