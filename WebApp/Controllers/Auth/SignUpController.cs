@@ -1,6 +1,5 @@
 ﻿using Engine.Helpers;
 using Engine.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.User;
 using WebApp.Controllers.Base;

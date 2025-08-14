@@ -1,10 +1,8 @@
-﻿using Engine.Services;
+﻿using Engine.Helpers;
+using Engine.Services;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.User;
-using System.Reflection.Metadata.Ecma335;
-using Engine.Helpers;
 using WebApp.Controllers.Base;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers.Auth;
 [Route("api/[controller]")]

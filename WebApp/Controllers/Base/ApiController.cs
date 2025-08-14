@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp.Controllers.Base;
 
@@ -7,7 +6,7 @@ namespace WebApp.Controllers.Base;
 [Route("[controller]")]
 public class ApiController : ControllerBase
 {
-    protected IActionResult Error(int code, string message)
+    protected ActionResult Error(int code, string message)
     {
         var errorResponse = new ResponseError(code, message);
         return BadRequest(errorResponse);

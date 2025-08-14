@@ -1,6 +1,7 @@
 ﻿using Engine.Interfaces;
 using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
+using Models.DTOs.Transaction;
 using Models.DTOs.User;
 using Models.Model;
 
@@ -11,6 +12,59 @@ public class UserService : IService
     public UserService(DBApp context)
     {
         _context = context;
+    }
+
+    public async Task<UserViewModel> GetUserByIdAsync(long userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+            return new UserViewModel
+            {
+                Errors = new List<string> { "Usuário não encontrado." }
+            };
+
+        return new UserViewModel
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email
+        };
+    }
+
+    public async Task<FullUserView> GetFullUserByIdAsync(long userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+            return new FullUserView { Errors = new List<string> { "Usuario não encontrado" } };
+
+        var walletService = new WalletService(_context);
+        var wallet = await walletService.GetWalletByUserIdAsync(userId);
+
+        if (wallet.HasErrors)
+            return new FullUserView { Errors = wallet.Errors };
+
+        var userFull = new FullUserView
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Document = user.Document,
+            PhoneNumber = user.PhoneNumber,
+            Wallet = new Models.DTOs.Wallet.WalletViewModel
+            {
+                Id = wallet.Id,
+                BalanceAvailable = wallet.BalanceAvailable,
+                BalanceBlocked = wallet.BalanceBlocked,
+                Currency = wallet.Currency,
+            },
+        };
+
+        return userFull;
+    }
+
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        return await _context.Users.FirstOrDefaultAsync(x => string.Equals(x.Email, email));
     }
 
     public async Task<UserViewModel> SignUp(CreateUserDto createUserDto)
@@ -33,17 +87,12 @@ public class UserService : IService
 
         // Chama metodo para criar a carteira do usuário
         var walletService = new WalletService(_context);
-        var wallet = await walletService.CreateWallet(user.Id);
+        var wallet = await walletService.CreateWalletAsync(user.Id);
 
         if (wallet.HasErrors)
             return new UserViewModel { Errors = wallet.Errors };
 
         return userView;
-    }
-
-    public async Task<User?> GetUserByEmailAsync(string email)
-    {
-        return await _context.Users.FirstOrDefaultAsync(x => string.Equals(x.Email, email));
     }
 
     private async Task<UserViewModel> SaveChanges(User user)

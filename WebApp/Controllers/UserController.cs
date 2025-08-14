@@ -1,18 +1,29 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Engine.Services;
 using Microsoft.AspNetCore.Mvc;
+using Models.DTOs.User;
 using WebApp.Controllers.Base;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApp.Controllers;
-[Authorize]
 [Route("api/[controller]")]
 public class UserController : ProtectedController
 {
-    // GET: api/<ValuesController>
-    [HttpGet]
-    public IEnumerable<string> Get()
+    private readonly UserService _userService;
+    public UserController(UserService userService)
     {
-        return new string[] { "value1", "value2" };
+        _userService = userService;
+    }
+
+    [HttpGet]
+    [Route("{userId}")]
+    public async Task<ActionResult<FullUserView>> GetUserById([FromRoute] long userId)
+    {
+        var fullUserView = await _userService.GetFullUserByIdAsync(userId);
+
+        if (fullUserView.HasErrors)
+            return Error(400, string.Join(", ", fullUserView.Errors));
+
+        return fullUserView;
     }
 }

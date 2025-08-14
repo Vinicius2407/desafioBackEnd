@@ -1,5 +1,5 @@
-﻿using Models.Interfaces;
-using Models.Helpers;
+﻿using Models.Helpers;
+using Models.Interfaces;
 
 namespace Models.Model;
 public class Transaction : BaseEntity, ISoftDelete

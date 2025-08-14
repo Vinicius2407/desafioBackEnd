@@ -2,11 +2,6 @@
 using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
 using Models.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Engine.Services;
 public class WalletService : IService
@@ -17,7 +12,15 @@ public class WalletService : IService
         _context = context;
     }
 
-    public async Task<Wallet> CreateWallet(long userId)
+    public async Task<Wallet> GetWalletByUserIdAsync(long userId)
+    {
+        var wallet = await _context.Wallets.Include(x => x.Currency).FirstOrDefaultAsync(x => x.UserId == userId);
+        if (wallet == null)
+            return new Wallet { Errors = new List<string> { "Carteira não encontrada para o usuário." } };
+        return wallet;
+    }
+
+    public async Task<Wallet> CreateWalletAsync(long userId)
     {
         Wallet wallet = new();
         var user = await _context.Users.FindAsync(userId) ?? throw new ArgumentException("Usuário não encontrado.", nameof(userId));
