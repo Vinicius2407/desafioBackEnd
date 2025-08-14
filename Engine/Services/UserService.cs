@@ -15,12 +15,6 @@ public class UserService : IService
 
     public async Task<UserViewModel> SignUp(CreateUserDto createUserDto)
     {
-        if (createUserDto == null)
-            throw new ArgumentNullException(nameof(createUserDto), "Dados do usuário não podem ser nulos.");
-
-        if (GetUserByEmail(createUserDto.Email).Result != null)
-            return new UserViewModel { Errors = new List<string> { "Email já em uso!" } };
-
         var passwordHash = Engine.Helpers.PasswordHelper.HashPassword(createUserDto.Password);
 
         var user = new User
@@ -32,39 +26,58 @@ public class UserService : IService
             PhoneNumber = createUserDto.PhoneNumber
         };
 
-        return await SaveUser(user);
+        var userView = await SaveChanges(user);
+
+        if (userView.HasErrors)
+            return userView;
+
+        // Chama metodo para criar a carteira do usuário
+        var walletService = new WalletService(_context);
+        var wallet = await walletService.CreateWallet(user.Id);
+
+        if (wallet.HasErrors)
+            return new UserViewModel { Errors = wallet.Errors };
+
+        return userView;
     }
 
-    public async Task<User?> GetUserByEmail(string email)
+    public async Task<User?> GetUserByEmailAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(x => string.Equals(x.Email, email));
     }
 
-    private async Task<UserViewModel> SaveUser(User user)
+    private async Task<UserViewModel> SaveChanges(User user)
     {
-
-        if (user.Id == 0)
-            _context.Users.Add(user);
-        else
+        UserViewModel userViewModel = new();
+        try
         {
-            var existingUser = await _context.Users.FindAsync(user.Id);
+            if (user.Id == 0)
+                _context.Users.Add(user);
+            else
+            {
+                var existingUser = await _context.Users.FindAsync(user.Id);
 
-            if (existingUser == null)
-                return new UserViewModel
-                {
-                    Errors = new List<string> { "Usuário não encontrado para atualização." }
-                };
+                if (existingUser == null)
+                    return new UserViewModel
+                    {
+                        Errors = new List<string> { "Usuário não encontrado para atualização." }
+                    };
 
-            _context.Entry(existingUser).CurrentValues.SetValues(user);
+                _context.Entry(existingUser).CurrentValues.SetValues(user);
+            }
+
+            await _context.SaveChangesAsync();
+            userViewModel = new UserViewModel
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email
+            };
         }
-
-        await _context.SaveChangesAsync();
-        var userViewModel = new UserViewModel
+        catch (Exception ex)
         {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email
-        };
+            userViewModel.Errors = new List<string> { ex.Message };
+        }
 
         return userViewModel;
     }

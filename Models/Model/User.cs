@@ -14,8 +14,8 @@ public class User : BaseEntity, ISoftDelete
     public string Document { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
 
-    public Wallet Wallet { get; set; } = new Wallet();
-    public List<Bet> Bets { get; set; } = new List<Bet>();
+    public Wallet Wallet { get; set; } = null!;
+    public List<Bet> Bets { get; set; } = null!;
 
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }

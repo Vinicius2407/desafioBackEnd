@@ -18,5 +18,5 @@ public class Bet : BaseEntity, ISoftDelete
     public long? DeletedBy { get; set; }
 
     public List<Transaction> Transactions { get; set; } = new List<Transaction>();
-    public User User { get; set; } = new User();
+    public User User { get; set; } = null!;
 }
