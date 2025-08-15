@@ -1,7 +1,9 @@
 ﻿using Engine.Interfaces;
 using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
+using Models.DTOs.Transaction;
 using Models.DTOs.User;
+using Models.DTOs.Wallet;
 using Models.Model;
 
 namespace Engine.Services;
@@ -71,6 +73,37 @@ public class UserService : IService
     public async Task<User?> GetUserByEmailAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(x => string.Equals(x.Email, email));
+    }
+
+    public async Task<WalletViewModel> GetWalletAsync(long userId)
+    {
+        var wallet = await _context.Wallets
+            .Include(w => w.Currency)
+            .Include(w => w.Transactions)
+            .FirstOrDefaultAsync(w => w.UserId == userId);
+        if (wallet.HasErrors)
+            return new WalletViewModel { Errors = wallet.Errors };
+        return new WalletViewModel
+        {
+            Id = wallet.Id,
+            BalanceAvailable = wallet.BalanceAvailable,
+            BalanceBlocked = wallet.BalanceBlocked,
+            Currency = new Models.DTOs.Currency.CurrencyViewModel
+            {
+                Id = wallet.Currency.Id,
+                Name = wallet.Currency.Name,
+                Code = wallet.Currency.Code,
+                Symbol = wallet.Currency.Symbol
+            },
+            Transactions = wallet.Transactions.Select(t => new TransactionViewModel
+            {
+                Id = t.Id,
+                Amount = t.Amount,
+                Type = t.Type,
+                CreatedAt = t.CreatedAt,
+                Description = t.Description
+            }).ToList()
+        };
     }
 
     public async Task<UserViewModel> SignUp(CreateUserDto createUserDto)

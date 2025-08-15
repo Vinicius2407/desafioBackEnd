@@ -1,6 +1,7 @@
 ﻿using Engine.Services;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.User;
+using Models.DTOs.Wallet;
 using WebApp.Controllers.Base;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -25,5 +26,15 @@ public class UserController : ProtectedController
             return Error(400, string.Join(", ", fullUserView.Errors));
 
         return fullUserView;
+    }
+
+    [HttpGet]
+    [Route("{userId}/getWallet")]
+    public async Task<ActionResult<WalletViewModel>> GetWallet([FromRoute] long userId)
+    {
+        var walletView = await _userService.GetWalletAsync(userId);
+        if (walletView.HasErrors)
+            return Error(400, string.Join(", ", walletView.Errors));
+        return walletView;
     }
 }
