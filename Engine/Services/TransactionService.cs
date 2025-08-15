@@ -3,8 +3,8 @@ using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
 using Models.DTOs.Bet;
 using Models.DTOs.Transaction;
-using Models.Model;
 using Models.Helpers;
+using Models.Model;
 using X.PagedList;
 using X.PagedList.Extensions;
 
@@ -20,7 +20,7 @@ public class TransactionService : IService
     public IPagedList<TransactionViewModel> GetTransactionsPaginedByWalletId(long? userId, int page, int itemsPerPage)
     {
         long? walletId = null;
-        if(userId != null)
+        if (userId != null)
             walletId = _context.Wallets
             .Where(x => x.UserId == userId)
             .Select(x => x.Id)
