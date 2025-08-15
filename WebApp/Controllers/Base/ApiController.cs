@@ -13,13 +13,15 @@ public class ApiController : ControllerBase
         return BadRequest(errorResponse);
     }
 
-    protected List<ValidationResult> ValidadeDataAnnotations<T>(T validatingDto)
+    protected List<string> ValidadeDataAnnotations<T>(T validatingDto)
     {
         var validationContext = new ValidationContext(validatingDto!);
         var validationResults = new List<ValidationResult>();
         _ = Validator.TryValidateObject(validatingDto!, validationContext, validationResults, true);
 
-        return validationResults;
+        var errorsList = validationResults.Select(x => x.ErrorMessage).ToList();
+
+        return errorsList;
     }
 }
 

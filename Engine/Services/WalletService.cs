@@ -56,7 +56,7 @@ public class WalletService : IService
             else
             {
                 var existingWallet = await _context.Wallets.FindAsync(wallet.Id) ?? throw new InvalidOperationException("Carteira não encontrada para atualização.");
-                existingWallet.CurrencyId = wallet.CurrencyId;
+                _context.Entry(existingWallet).CurrentValues.SetValues(wallet);
             }
             await _context.SaveChangesAsync();
         }

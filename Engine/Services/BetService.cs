@@ -116,7 +116,6 @@ public class BetService : IService
                     WalletId = wallet.Id,
                     Amount = createBetDto.Amount,
                     Type = Enumerators.TransactionType.BET,
-                    CreatedAt = DateTime.UtcNow,
                 };
 
                 var transactionViewModel = await transactionService.CreateTransactionAsync(transaction);
@@ -178,7 +177,7 @@ public class BetService : IService
                 user.Bets = await GetBetsByUserIdAsync(user.Id);
 
                 var walletService = new WalletService(_context);
-                var wallet = await walletService.GetWalletByUserIdAsync(user.Wallet.Id);
+                var wallet = await walletService.GetWalletByUserIdAsync(user.Id);
 
                 if (wallet.HasErrors)
                 {
@@ -188,7 +187,11 @@ public class BetService : IService
 
                 var win = Helpers.WinRandomHelper.WinOrLose();
                 var statusBet = win ? Enumerators.BetStatus.WON : Enumerators.BetStatus.LOST;
-                var updatedStatusBet = await UpdateBetStatusAsync(betId, statusBet);
+                betViewModel = await UpdateBetStatusAsync(betId, statusBet);
+
+                if (betViewModel.HasErrors)
+                    throw new Exception();
+
                 if (win)
                 {
                     var transaction = new Transaction
@@ -241,13 +244,13 @@ public class BetService : IService
         return betViewModel;
     }
 
-    public async Task<bool> UpdateBetStatusAsync(long betId, Enumerators.BetStatus betStatus)
+    public async Task<BetViewModel> UpdateBetStatusAsync(long betId, Enumerators.BetStatus betStatus)
     {
         var bet = await _context.Bets.FindAsync(betId);
         bet!.Status = betStatus;
 
         var betViewModel = await SaveChangesAsync(bet);
-        return betViewModel.Status == betStatus;
+        return betViewModel;
     }
 
     private async Task<BetViewModel> SaveChangesAsync(Bet bet)

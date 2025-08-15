@@ -30,6 +30,9 @@ public class TransactionService : IService
         var transactionViewModel = new TransactionViewModel();
         try
         {
+            transaction.Bet = null;
+            transaction.Wallet = null!;
+
             if (transaction.Id == 0)
                 _context.Transactions.Add(transaction);
             else
