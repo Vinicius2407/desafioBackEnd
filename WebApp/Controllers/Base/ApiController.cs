@@ -7,6 +7,21 @@ namespace WebApp.Controllers.Base;
 [Route("[controller]")]
 public class ApiController : ControllerBase
 {
+    public class PaginationResponse<T>
+    {
+        public int Page { get; set; }
+        public int ItemsPerPage { get; set; }
+        public int TotalPages { get; set; }
+        public int TotalItems { get; set; }
+        public List<T> Items { get; set; } = new List<T>();
+    }
+
+    public class PaginationRequest
+    {
+        public int ItemsPerPage { get; set; } = 5;
+        public int Page { get; set; } = 1;
+    }
+
     protected ActionResult Error(int code, string message)
     {
         var errorResponse = new ResponseError(code, message);

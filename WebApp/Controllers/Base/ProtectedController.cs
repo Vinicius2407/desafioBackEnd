@@ -6,7 +6,7 @@ namespace WebApp.Controllers.Base;
 public class ProtectedController : ApiController
 {
     private long? _userId;
-    protected long UserIdAutenticado
+    protected long AuthenticatedUserId
     {
         get
         {

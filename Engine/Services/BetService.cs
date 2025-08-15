@@ -7,6 +7,8 @@ using Models.DTOs.Transaction;
 using Models.DTOs.User;
 using Models.Helpers;
 using Models.Model;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Engine.Services;
 public class BetService : IService
@@ -94,6 +96,32 @@ public class BetService : IService
         return betsViewModel;
     }
 
+    public IPagedList<BetViewModel> GetBetsPaginedByUserId(long userId, int page, int itemsPerPage)
+    {
+        var query = _context.Bets.Include(x => x.Transactions).Where(x => x.UserId == userId).OrderByDescending(x => x.CreatedAt);
+        var result = query
+                        .Select(x => new BetViewModel
+                        {
+                            Id = x.Id,
+                            Amount = x.Amount,
+                            Status = x.Status,
+                            PrizeAmount = x.PrizeAmount,
+                            CreatedAt = x.CreatedAt,
+                            UserId = x.UserId,
+                            Transactions = x.Transactions.Select(t => new TransactionViewModel
+                            {
+                                Id = t.Id,
+                                Amount = t.Amount,
+                                Type = t.Type,
+                                CreatedAt = t.CreatedAt,
+                                Description = t.Description,
+                                BetId = t.BetId,
+                            }).ToList(),
+                        })
+                        .ToPagedList(page, itemsPerPage);
+        return result;
+    }
+
     public async Task<BetViewModel> PlaceBetAsync(CreateBetDto createBetDto)
     {
         var betViewModel = new BetViewModel();
@@ -133,6 +161,7 @@ public class BetService : IService
                 var transactionService = new TransactionService(_context);
                 var transaction = new Transaction
                 {
+                    BetId = betViewModel.Id,
                     WalletId = wallet.Id,
                     Amount = createBetDto.Amount,
                     Type = Enumerators.TransactionType.BET,

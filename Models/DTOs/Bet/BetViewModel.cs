@@ -13,7 +13,6 @@ public class BetViewModel : BaseEntity
     public decimal? PrizeAmount { get; set; } = null;
     public Enumerators.BetStatus Status { get; set; } = Enumerators.BetStatus.PENDING;
     public string StatusDescription { get => Status.ToString(); }
-    [JsonIgnore]
     public List<TransactionViewModel>? Transactions { get; set; } = null;
     [JsonIgnore]
     public UserViewModel? User { get; set; } = null;
