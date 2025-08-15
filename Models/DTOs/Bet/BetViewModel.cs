@@ -2,11 +2,14 @@
 using Models.DTOs.User;
 using Models.Helpers;
 using Models.Model;
+using System.Text.Json.Serialization;
 
 namespace Models.DTOs.Bet;
 public class BetViewModel : BaseEntity
 {
-    public decimal Amout { get; set; }
+    [JsonIgnore]
+    public long UserId { get; set; }
+    public decimal Amount { get; set; }
     public decimal? PrizeAmount { get; set; } = null;
     public Enumerators.BetStatus Status { get; set; } = Enumerators.BetStatus.PENDING;
     public List<TransactionViewModel>? Transactions { get; set; } = null;

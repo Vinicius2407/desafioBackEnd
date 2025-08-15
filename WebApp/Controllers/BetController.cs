@@ -28,7 +28,10 @@ public class BetController : ProtectedController
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
 
-        Helpers.
+        betViewModel = await _betService.ProcessBetResultAsync(betViewModel.Id);
+
+        if (betViewModel.HasErrors)
+            return Error(400, string.Join(", ", betViewModel.Errors));
 
         return betViewModel;
     }
