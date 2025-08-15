@@ -17,9 +17,19 @@ public class BetController : ProtectedController
     }
 
     [HttpGet]
+    [Route("byUser/{userId}")]
+    public ActionResult<PaginationResponse<BetViewModel>> GetAll([FromRoute] long userId, [FromQuery] PaginationRequest paginationRequest)
+    {
+        var itemListPagined = _betService.GetBetsPaginedByUserId(userId, paginationRequest.Page, paginationRequest.ItemsPerPage);
+        var response = new PaginationResponse<BetViewModel>(itemListPagined, itemListPagined.ToList());
+        return response;
+    }
+
+    [HttpGet]
+    [Route("all")]
     public ActionResult<PaginationResponse<BetViewModel>> GetAll([FromQuery] PaginationRequest paginationRequest)
     {
-        var itemListPagined = _betService.GetBetsPaginedByUserId(AuthenticatedUserId, paginationRequest.Page, paginationRequest.ItemsPerPage);
+        var itemListPagined = _betService.GetBetsPaginedByUserId(null, paginationRequest.Page, paginationRequest.ItemsPerPage);
         var response = new PaginationResponse<BetViewModel>(itemListPagined, itemListPagined.ToList());
         return response;
     }

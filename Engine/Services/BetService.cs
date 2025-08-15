@@ -95,9 +95,13 @@ public class BetService : IService
         return betsViewModel;
     }
 
-    public IPagedList<BetViewModel> GetBetsPaginedByUserId(long userId, int page, int itemsPerPage)
+    public IPagedList<BetViewModel> GetBetsPaginedByUserId(long? userId, int page, int itemsPerPage)
     {
-        var query = _context.Bets.Include(x => x.Transactions).Where(x => x.UserId == userId).OrderByDescending(x => x.CreatedAt);
+        var query = _context.Bets.Include(x => x.Transactions).OrderByDescending(x => x.CreatedAt).AsQueryable();
+
+        if (userId != null)
+            query = query.Where(x => x.UserId == userId);
+
         var result = query
                         .Select(x => new BetViewModel
                         {
