@@ -19,10 +19,12 @@ public class SignUpController : ApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> SignUp([FromBody] CreateUserDto createUserDto)
+    public async Task<ActionResult> SignUp([FromBody] CreateUserDto createUserDto)
     {
-        if (createUserDto == null)
-            return Error(400, "Dados do usuário devem ser preenchidos.");
+        var errors = ValidadeDataAnnotations<CreateUserDto>(createUserDto);
+
+        if (errors.Any())
+            return Error(400, string.Join(",", errors));
 
         if (_userService.GetUserByEmailAsync(createUserDto.Email).Result != null)
             return Error(400, "Usuario com email ja existente!");

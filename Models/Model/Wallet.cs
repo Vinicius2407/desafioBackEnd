@@ -1,4 +1,6 @@
 ﻿using Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Models.Model;
 public class Wallet : BaseEntity, ISoftDelete
@@ -14,4 +16,8 @@ public class Wallet : BaseEntity, ISoftDelete
     public User User { get; set; } = null!;
     public Currency Currency { get; set; } = null!;
     public List<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+    [ConcurrencyCheck]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+    public uint xmin { get; private set; }
 }

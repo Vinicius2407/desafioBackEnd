@@ -24,5 +24,10 @@ public class WalletMap : IEntityTypeConfiguration<Wallet>
         builder.HasOne(x => x.User)
             .WithOne(x => x.Wallet)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Property(w => w.xmin)
+            .HasColumnName("xmin")
+            .IsRowVersion()
+            .ValueGeneratedOnAddOrUpdate();
     }
 }

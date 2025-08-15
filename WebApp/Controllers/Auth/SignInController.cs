@@ -21,6 +21,11 @@ public class SignInController : ApiController
     [HttpPost]
     public async Task<IActionResult> SignIn(LoginUserDto loginUserDto)
     {
+        var errors = ValidadeDataAnnotations<LoginUserDto>(loginUserDto);
+
+        if (errors.Any())
+            return Error(400, string.Join(",", errors));
+
         var user = await _userService.GetUserByEmailAsync(loginUserDto.Email);
 
         if (user == null) return Error(401, "Usuario ou Senha incorretos.");

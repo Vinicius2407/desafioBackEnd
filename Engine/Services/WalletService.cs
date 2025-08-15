@@ -39,6 +39,13 @@ public class WalletService : IService
         return await SaveChangesAsync(wallet);
     }
 
+    public async Task<Wallet> UpdateWalletAsync(Wallet wallet)
+    {
+        wallet = await SaveChangesAsync(wallet);
+
+        return wallet;
+    }
+
     private async Task<Wallet> SaveChangesAsync(Wallet wallet)
     {
         Wallet walletResponse = new();
