@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using X.PagedList;
 
 namespace WebApp.Controllers.Base;
 
@@ -14,6 +15,15 @@ public class ApiController : ControllerBase
         public int TotalPages { get; set; }
         public int TotalItems { get; set; }
         public List<T> Items { get; set; } = new List<T>();
+
+        public PaginationResponse(IPagedList pagedList, List<T> items)
+        {
+            Page = pagedList.PageNumber;
+            ItemsPerPage = pagedList.PageSize;
+            TotalItems = pagedList.TotalItemCount;
+            TotalPages = pagedList.PageCount;
+            Items = items;
+        }
     }
 
     public class PaginationRequest

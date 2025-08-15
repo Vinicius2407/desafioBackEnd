@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Engine.Services;
 public class TransactionService : IService
@@ -20,8 +21,12 @@ public class TransactionService : IService
         _context = context;
     }
 
-    public IPagedList<TransactionViewModel> GetTransactionsPaginedByWalletId(long walletId, int page, int itemsPerPage)
+    public IPagedList<TransactionViewModel> GetTransactionsPaginedByWalletId(long userId, int page, int itemsPerPage)
     {
+        var walletId = _context.Wallets
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Id)
+            .FirstOrDefault();
         var query = _context.Transactions.Include(x => x.Bet).Where(x => x.WalletId == walletId).OrderByDescending(x => x.CreatedAt);
         var result = query
                         .Select(x => new TransactionViewModel
@@ -31,15 +36,17 @@ public class TransactionService : IService
                             Type = x.Type,
                             CreatedAt = x.CreatedAt,
                             BetId = x.BetId,
-                            Bet = new BetViewModel
-                            {
-                                Id = x.BetId,
-                                Amount = x.Bet.Amount,
-                                CreatedAt = x.Bet.CreatedAt,
-                                Status = x.Bet.Status,
-                                UserId = x.Bet.UserId,
-                                PrizeAmount = x.Bet.PrizeAmount,
-                            }
+                            Bet = x.Bet != null
+                                            ? new BetViewModel
+                                            {
+                                                Id = x.Bet.Id,
+                                                Amount = x.Bet.Amount,
+                                                CreatedAt = x.Bet.CreatedAt,
+                                                Status = x.Bet.Status,
+                                                UserId = x.Bet.UserId,
+                                                PrizeAmount = x.Bet.PrizeAmount,
+                                            }
+                                            : null
                         })
                         .ToPagedList(page, itemsPerPage);
         return result;

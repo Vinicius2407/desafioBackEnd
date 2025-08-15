@@ -21,16 +21,7 @@ public class BetController : ProtectedController
     public ActionResult<PaginationResponse<BetViewModel>> GetAll([FromQuery] PaginationRequest paginationRequest)
     {
         var itemListPagined = _betService.GetBetsPaginedByUserId(AuthenticatedUserId, paginationRequest.Page, paginationRequest.ItemsPerPage);
-
-        var response = new PaginationResponse<BetViewModel>
-        {
-            Page = itemListPagined.PageNumber,
-            ItemsPerPage = itemListPagined.PageSize,
-            TotalItems = itemListPagined.TotalItemCount,
-            TotalPages = itemListPagined.PageCount,
-            Items = itemListPagined.ToList()
-        };
-
+        var response = new PaginationResponse<BetViewModel>(itemListPagined, itemListPagined.ToList());
         return response;
     }
 
@@ -50,7 +41,7 @@ public class BetController : ProtectedController
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
 
-        betViewModel = await _betService.ProcessBetResultAsync(betViewModel.Id);
+        betViewModel = await _betService.ProcessBetResultAsync((long)betViewModel.Id!);
 
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
@@ -76,7 +67,7 @@ public class BetController : ProtectedController
         if (wallet.BalanceAvailable < betViewModel.Amount)
             return Error(400, "Cancelamento negado, valor na carteira menor que o valor da aposta");
 
-        betViewModel = await _betService.UpdateBetStatusAsync(betViewModel.Id, Models.Helpers.Enumerators.BetStatus.CANCELLED);
+        betViewModel = await _betService.UpdateBetStatusAsync((long)betViewModel.Id, Models.Helpers.Enumerators.BetStatus.CANCELLED);
 
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));

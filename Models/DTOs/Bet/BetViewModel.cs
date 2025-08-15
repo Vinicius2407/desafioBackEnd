@@ -16,4 +16,5 @@ public class BetViewModel : BaseEntity
     public List<TransactionViewModel>? Transactions { get; set; } = null;
     [JsonIgnore]
     public UserViewModel? User { get; set; } = null;
+    public new long? Id { get; set; } = null;
 }
