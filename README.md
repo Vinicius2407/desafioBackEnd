@@ -45,6 +45,10 @@ Siga os passos abaixo para configurar e executar a aplicação localmente.
 Coloque o appsettings na pasta WebApp
 Se precisar, ajuste a string para a sua instância do banco.
 
+#### Modelo Entidade Relacionamento
+
+  ![mer](WebApp/wwwroot/mer.png)
+
 ### 2. Aplique as Migrações (Criar o Banco de Dados)
 
 As Migrations do Entity Framework criarão o banco de dados e todas as tabelas necessárias.
