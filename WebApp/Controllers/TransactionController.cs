@@ -14,9 +14,19 @@ public class TransactionController : ProtectedController
         _transactionService = transactionService;
     }
     [HttpGet]
+    [Route("byUser/{userId}")]
+    public ActionResult<PaginationResponse<TransactionViewModel>> GetAll([FromRoute] long userId, [FromQuery] PaginationRequest paginationRequest)
+    {
+        var itemListPagined = _transactionService.GetTransactionsPaginedByWalletId(userId, paginationRequest.Page, paginationRequest.ItemsPerPage);
+        var response = new PaginationResponse<TransactionViewModel>(itemListPagined, itemListPagined.ToList());
+        return response;
+    }
+
+    [HttpGet]
+    [Route("all")]
     public ActionResult<PaginationResponse<TransactionViewModel>> GetAll([FromQuery] PaginationRequest paginationRequest)
     {
-        var itemListPagined = _transactionService.GetTransactionsPaginedByWalletId(AuthenticatedUserId, paginationRequest.Page, paginationRequest.ItemsPerPage);
+        var itemListPagined = _transactionService.GetTransactionsPaginedByWalletId(null, paginationRequest.Page, paginationRequest.ItemsPerPage);
         var response = new PaginationResponse<TransactionViewModel>(itemListPagined, itemListPagined.ToList());
         return response;
     }

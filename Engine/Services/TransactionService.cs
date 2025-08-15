@@ -17,13 +17,20 @@ public class TransactionService : IService
         _context = context;
     }
 
-    public IPagedList<TransactionViewModel> GetTransactionsPaginedByWalletId(long userId, int page, int itemsPerPage)
+    public IPagedList<TransactionViewModel> GetTransactionsPaginedByWalletId(long? userId, int page, int itemsPerPage)
     {
-        var walletId = _context.Wallets
+        long? walletId = null;
+        if(userId != null)
+            walletId = _context.Wallets
             .Where(x => x.UserId == userId)
             .Select(x => x.Id)
             .FirstOrDefault();
-        var query = _context.Transactions.Include(x => x.Bet).Where(x => x.WalletId == walletId).OrderByDescending(x => x.CreatedAt);
+
+        var query = _context.Transactions.Include(x => x.Bet).OrderByDescending(x => x.CreatedAt).AsQueryable();
+
+        if (walletId != null)
+            query = query.Where(x => x.WalletId == walletId);
+
         var result = query
                         .Select(x => new TransactionViewModel
                         {
