@@ -4,7 +4,6 @@ using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
 using Models.DTOs.Bet;
 using Models.DTOs.Transaction;
-using Models.DTOs.User;
 using Models.Helpers;
 using Models.Model;
 using X.PagedList;
@@ -188,7 +187,7 @@ public class BetService : IService
                 await _context.SaveChangesAsync();
                 await transactionContext.CommitAsync();
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException)
             {
                 if (!betViewModel.HasErrors)
                     betViewModel.Errors = new List<string> { "A aposta não pôde ser processada. Outro processo modificou o saldo antes." };
@@ -277,7 +276,7 @@ public class BetService : IService
                 await _context.SaveChangesAsync();
                 await transactionContext.CommitAsync();
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException)
             {
                 await transactionContext.RollbackAsync();
                 return new BetViewModel { Errors = new List<string> { "A aposta não pôde ser processada. Outro processo modificou o saldo antes." } };

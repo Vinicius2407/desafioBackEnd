@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.Bet;
 using WebApp.Controllers.Base;
-using X.PagedList;
 
 namespace WebApp.Controllers;
 [Route("api/[controller]")]

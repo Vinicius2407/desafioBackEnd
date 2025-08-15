@@ -1,7 +1,6 @@
 ﻿using Engine.Interfaces;
 using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
-using Models.DTOs.Transaction;
 using Models.DTOs.User;
 using Models.Model;
 
