@@ -17,6 +17,26 @@ public class BetService : IService
         _context = context;
     }
 
+    public async Task<BetViewModel> GetBetByIdAsync(long betId)
+    {
+        var bet = await _context.Bets.FindAsync(betId);
+
+        if (bet == null)
+            return new BetViewModel { Errors = new List<string> { "Aposta não encontrada" } };
+
+        var betViewModel = new BetViewModel
+        {
+            Id = bet.Id,
+            Amount = bet.Amount,
+            Status = bet.Status,
+            PrizeAmount = bet.PrizeAmount,
+            CreatedAt = bet.CreatedAt,
+            UserId = bet.UserId
+        };
+
+        return betViewModel;
+    }
+
     public async Task<BetViewModel> GetFullBetByIdAsync(long betId)
     {
         var bet = await _context.Bets
@@ -262,12 +282,12 @@ public class BetService : IService
                 _context.Bets.Add(bet);
             else
             {
-                var existingBet = await _context.Users.FindAsync(bet.Id);
+                var existingBet = await _context.Bets.FindAsync(bet.Id);
 
                 if (existingBet == null)
                     return new BetViewModel
                     {
-                        Errors = new List<string> { "Usuário não encontrado para atualização." }
+                        Errors = new List<string> { "Aposta não encontrado para atualização." }
                     };
 
                 _context.Entry(existingBet).CurrentValues.SetValues(bet);

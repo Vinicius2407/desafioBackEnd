@@ -33,4 +33,12 @@ public class JWTHelper
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public static string DeserializeToken(string accessToken)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(accessToken);
+
+        return jwtSecurityToken.Claims.First(x => x.Type == "sub").Value;
+    }
 }

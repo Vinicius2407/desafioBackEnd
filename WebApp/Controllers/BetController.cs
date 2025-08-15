@@ -9,9 +9,11 @@ namespace WebApp.Controllers;
 public class BetController : ProtectedController
 {
     private readonly BetService _betService;
-    public BetController(BetService betService)
+    private readonly WalletService _walletService;
+    public BetController(BetService betService, WalletService walletService)
     {
         _betService = betService;
+        _walletService = walletService;
     }
 
     [HttpPost]
@@ -22,6 +24,8 @@ public class BetController : ProtectedController
 
         if (errors.Any())
             return Error(400, string.Join(", ", errors));
+
+        createBetDto.UserId = UserIdAutenticado;
 
         var betViewModel = await _betService.PlaceBetAsync(createBetDto);
 
@@ -34,5 +38,31 @@ public class BetController : ProtectedController
             return Error(400, string.Join(", ", betViewModel.Errors));
 
         return betViewModel;
+    }
+
+    [HttpPut]
+    [Route("{betId}/cancel")]
+    public async Task<ActionResult> CancelBet(long betId)
+    {
+        if (betId == 0)
+            return Error(400, "Id inválido");
+
+        var betViewModel = await _betService.GetBetByIdAsync(betId);
+
+        if (betViewModel.HasErrors)
+            return Error(400, string.Join(", ", betViewModel.Errors));
+
+        var wallet = await _walletService.GetWalletByUserIdAsync(UserIdAutenticado);
+
+        // Perguntar sobre a validação
+        if (wallet.BalanceAvailable < betViewModel.Amount)
+            return Error(400, "Cancelamento negado, valor na carteira menor que o valor da aposta");
+
+        betViewModel = await _betService.UpdateBetStatusAsync(betViewModel.Id, Models.Helpers.Enumerators.BetStatus.CANCELLED);
+        
+        if (betViewModel.HasErrors)
+            return Error(400, string.Join(", ", betViewModel.Errors));
+
+        return NoContent();
     }
 }

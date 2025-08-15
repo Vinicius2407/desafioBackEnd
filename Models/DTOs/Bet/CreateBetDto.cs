@@ -16,11 +16,12 @@ public class CreateBetDto : BaseEntity
     [Required(ErrorMessage = "Informe o valor da aposta.")]
     [Range(1, double.MaxValue, ErrorMessage = "O valor da aposta deve ser maior que zero.")]
     public decimal Amount { get; set; }
-    [Required(ErrorMessage = "Informe o id do usuario")]
-    [Range(1, double.MaxValue, ErrorMessage = "Id do usuario invalido")]
+    [JsonIgnore]
     public long UserId { get; set; }
     [JsonIgnore]
     public List<TransactionViewModel>? Transaction { get; set; } = null;
     [JsonIgnore]
     public new DateTime CreatedAt { get; set; }
+    [JsonIgnore]
+    public new long Id { get; set; }
 }
