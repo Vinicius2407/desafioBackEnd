@@ -29,7 +29,7 @@ public class UserController : ProtectedController
     }
 
     [HttpGet]
-    [Route("{userId}/getWallet")]
+    [Route("{userId}/wallet")]
     public async Task<ActionResult<WalletViewModel>> GetWallet([FromRoute] long userId)
     {
         var walletView = await _userService.GetWalletAsync(userId);

@@ -17,6 +17,18 @@ public class BetController : ProtectedController
     }
 
     [HttpGet]
+    [Route("{betId}")]
+    public async Task<ActionResult<BetViewModel>> GetById([FromRoute] long betId)
+    {
+        var betViewModel = await _betService.GetFullBetByIdAsync(betId);
+
+        if (betViewModel.HasErrors)
+            return Error(400, string.Join(", ", betViewModel.Errors));
+
+        return betViewModel;
+    }
+
+    [HttpGet]
     [Route("byUser/{userId}")]
     public ActionResult<PaginationResponse<BetViewModel>> GetAll([FromRoute] long userId, [FromQuery] PaginationRequest paginationRequest)
     {
@@ -52,6 +64,25 @@ public class BetController : ProtectedController
 
         if (createBetDto.AutoPlayOnCreate)
             betViewModel = await _betService.ProcessBetResultAsync((long)betViewModel.Id!);
+
+        if (betViewModel.HasErrors)
+            return Error(400, string.Join(", ", betViewModel.Errors));
+
+        return betViewModel;
+    }
+
+    [HttpGet]
+    [Route("{betId}/execute")]
+    public async Task<ActionResult<BetViewModel>> ProcessBetResultAsync([FromRoute] long betId)
+    {
+        var betViewModel = await _betService.GetBetByIdAsync(betId);
+        if (betViewModel == null)
+            return Error(400, "Aposta nao encontrada");
+
+        if (betViewModel.Status != Models.Helpers.Enumerators.BetStatus.PENDING)
+            return Error(400, "Aposta não esta pendente!");
+
+        betViewModel = await _betService.ProcessBetResultAsync(betId);
 
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
