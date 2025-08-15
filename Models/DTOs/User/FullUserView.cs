@@ -1,6 +1,7 @@
 ﻿using Models.DTOs.Bet;
 using Models.DTOs.Transaction;
 using Models.DTOs.Wallet;
+using System.Text.Json.Serialization;
 
 namespace Models.DTOs.User;
 public class FullUserView : UserViewModel
@@ -10,17 +11,14 @@ public class FullUserView : UserViewModel
     public WalletViewModel Wallet { get; set; } = null!;
     public List<TransactionViewModel>? Transactions { get; set; } = null;
     public List<BetViewModel> Bets { get; set; } = new List<BetViewModel>();
-
-    public bool IsOnLosingStreak
+    public int LoseStreakCounter { get; set; }
+    [JsonIgnore]
+    public decimal LostBetAmountPercentage { get; set; }
+    public bool IsOnLosingStreak()
     {
-        get
-        {
-            var betsOrdenada = Bets.OrderByDescending(bet => bet.CreatedAt).Take(5).ToList();
+        var betsOrdenada = Bets.Where(x => x.Status == Helpers.Enumerators.BetStatus.LOST && LoseStreakCounter >= 5).OrderByDescending(bet => bet.CreatedAt).Take(5).ToList();
+        LostBetAmountPercentage = betsOrdenada.Sum(x => x.Amount) * 0.1M;
 
-            if (betsOrdenada.Count < 5)
-                return false;
-
-            return betsOrdenada.All(x => x.Status == Helpers.Enumerators.BetStatus.LOST);
-        }
+        return LoseStreakCounter >= 5;
     }
 }

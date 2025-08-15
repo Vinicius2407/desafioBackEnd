@@ -8,6 +8,7 @@ public class User : BaseEntity, ISoftDelete
     public string Email { get; set; } = string.Empty;
     public string Document { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
+    public int LoseStreakCounter { get; set; } = 0;
 
     public Wallet Wallet { get; set; } = null!;
     public List<Bet> Bets { get; set; } = null!;

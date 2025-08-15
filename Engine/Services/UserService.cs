@@ -49,6 +49,7 @@ public class UserService : IService
             Email = user.Email,
             Document = user.Document,
             PhoneNumber = user.PhoneNumber,
+            LoseStreakCounter = user.LoseStreakCounter,
             Wallet = new Models.DTOs.Wallet.WalletViewModel
             {
                 Id = wallet.Id,
@@ -98,6 +99,30 @@ public class UserService : IService
             return new UserViewModel { Errors = wallet.Errors };
 
         return userView;
+    }
+
+    public async Task<FullUserView> IncrementLoser(long userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        user.LoseStreakCounter += 1;
+        var userFull = await SaveChanges(user);
+
+        if (userFull.HasErrors)
+            return new FullUserView { Errors = userFull.Errors };
+
+        return await GetFullUserByIdAsync(userId);
+    }
+
+    public async Task<FullUserView> ResetLoseStreak(long userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        user.LoseStreakCounter = 0;
+        var userFull = await SaveChanges(user);
+
+        if (userFull.HasErrors)
+            return new FullUserView { Errors = userFull.Errors };
+
+        return await GetFullUserByIdAsync(userId);
     }
 
     private async Task<UserViewModel> SaveChanges(User user)

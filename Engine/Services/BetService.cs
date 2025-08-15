@@ -210,11 +210,15 @@ public class BetService : IService
         {
             try
             {
+                var transactionService = new TransactionService(_context);
+                var userService = new UserService(_context);
+                var walletService = new WalletService(_context);
+
 
                 if (betViewModel.HasErrors)
                     return betViewModel;
 
-                var user = await new UserService(_context).GetFullUserByIdAsync(betViewModel.UserId);
+                var user = await userService.GetFullUserByIdAsync(betViewModel.UserId);
 
                 if (user.HasErrors)
                 {
@@ -222,9 +226,6 @@ public class BetService : IService
                     return betViewModel;
                 }
 
-                user.Bets = await GetBetsByUserIdAsync(user.Id);
-
-                var walletService = new WalletService(_context);
                 var wallet = await walletService.GetWalletByUserIdAsync(user.Id);
 
                 if (wallet.HasErrors)
@@ -240,21 +241,20 @@ public class BetService : IService
                 if (betViewModel.HasErrors)
                     throw new Exception();
 
+                Transaction transaction = null!;
                 if (win)
                 {
-                    var transaction = new Transaction
+                    betViewModel.PrizeAmount = betViewModel.Amount * 2;
+                    transaction = new Transaction
                     {
-                        Amount = (betViewModel.Amount + (user.IsOnLosingStreak ? betViewModel.Amount * 0.1M : 0)) * 2,
-                        CreatedAt = DateTime.UtcNow,
+                        Amount = (decimal)betViewModel.PrizeAmount,
                         Type = Enumerators.TransactionType.WIN,
                         BetId = betViewModel.Id,
                         WalletId = user.Wallet.Id,
-                        Description = $"Aposta vencedora{(user.IsOnLosingStreak ? ", 10% de bonus." : "")}",
+                        Description = "Aposta vencedora",
                     };
 
-                    var transactionService = new TransactionService(_context);
                     var transactionViewModel = await transactionService.CreateTransactionAsync(transaction);
-
                     if (transactionViewModel.HasErrors)
                     {
                         betViewModel.Errors = transactionViewModel.Errors;
@@ -262,6 +262,33 @@ public class BetService : IService
                     }
 
                     wallet.BalanceAvailable += transaction.Amount;
+                    user = await userService.ResetLoseStreak(user.Id);
+                    var bet = _context.Bets.Find(betViewModel.Id);
+                    bet!.PrizeAmount = betViewModel.PrizeAmount;
+                }
+                else
+                {
+                    user = await userService.IncrementLoser(user.Id);
+                    user.Bets = await GetBetsByUserIdAsync(user.Id);
+                    if (user.IsOnLosingStreak())
+                    {
+                        var transactionBonus = new Transaction
+                        {
+                            Amount = user.LostBetAmountPercentage,
+                            Type = Enumerators.TransactionType.REFUND,
+                            WalletId = user.Wallet.Id,
+                            Description = "Bônus por sequência de derrotas.",
+                        };
+
+                        var transactionBonusViewModel = await transactionService.CreateTransactionAsync(transactionBonus);
+                        if (transactionBonusViewModel.HasErrors)
+                        {
+                            betViewModel.Errors = transactionBonusViewModel.Errors;
+                            throw new Exception();
+                        }
+
+                        wallet.BalanceAvailable += transactionBonus.Amount;
+                    }
                 }
 
                 wallet.BalanceBlocked -= betViewModel.Amount;

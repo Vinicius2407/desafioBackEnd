@@ -19,6 +19,7 @@ public class UserMap : IEntityTypeConfiguration<User>
         builder.Property(x => x.Document).HasMaxLength(20);
         builder.Property(x => x.PhoneNumber).HasMaxLength(15);
         builder.Property(x => x.IsDeleted).IsRequired().HasDefaultValue(false);
+        builder.Property(x => x.LoseStreakCounter).HasDefaultValue(0);
 
         builder.HasIndex(x => x.Email).IsUnique();
     }

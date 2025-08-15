@@ -35,9 +35,12 @@ public class SignInController : ApiController
 
         var jwtToken = JWTHelper.GenerateToken(user.Id, user.Email, _config);
 
+        var userFull = await _userService.GetFullUserByIdAsync(user.Id);
+
         return Ok(new
         {
             accessToken = jwtToken,
+            user = userFull
         });
     }
 }

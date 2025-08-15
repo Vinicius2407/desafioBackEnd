@@ -40,7 +40,8 @@ public class BetController : ProtectedController
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
 
-        betViewModel = await _betService.ProcessBetResultAsync((long)betViewModel.Id!);
+        if (createBetDto.AutoPlayOnCreate)
+            betViewModel = await _betService.ProcessBetResultAsync((long)betViewModel.Id!);
 
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
