@@ -324,6 +324,17 @@ public class BetService : IService
         var bet = await _context.Bets.FindAsync(betId);
         bet!.Status = betStatus;
 
+        if (betStatus == Enumerators.BetStatus.CANCELLED)
+        {
+            var wallet = await _context.Users.Include(x => x.Wallet).Where(x => x.Id == bet.UserId).Select(x => x.Wallet).FirstOrDefaultAsync();
+
+            if (wallet == null)
+                return new BetViewModel { Errors = new List<string> { "Carteira não encontrada para executar o estorno." } };
+
+            wallet.BalanceAvailable += bet.Amount;
+            wallet.BalanceBlocked -= bet.Amount;
+        }
+
         var betViewModel = await SaveChangesAsync(bet);
         return betViewModel;
     }

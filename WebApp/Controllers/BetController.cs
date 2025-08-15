@@ -63,11 +63,14 @@ public class BetController : ProtectedController
 
         var wallet = await _walletService.GetWalletByUserIdAsync(AuthenticatedUserId);
 
-        // Perguntar sobre a validação
-        if (wallet.BalanceAvailable < betViewModel.Amount)
-            return Error(400, "Cancelamento negado, valor na carteira menor que o valor da aposta");
+        // Logica simples
+        if (betViewModel.Status != Models.Helpers.Enumerators.BetStatus.PENDING)
+            return Error(400, "Cancelamento negado, aposta não esta mas pendente.");
 
-        betViewModel = await _betService.UpdateBetStatusAsync((long)betViewModel.Id, Models.Helpers.Enumerators.BetStatus.CANCELLED);
+        if (wallet.BalanceBlocked < betViewModel.Amount)
+            return Error(400, "Cancelamento negado, valores de bloqueio para estorno menor que valor da aposta.");
+
+        betViewModel = await _betService.UpdateBetStatusAsync((long)betViewModel.Id!, Models.Helpers.Enumerators.BetStatus.CANCELLED);
 
         if (betViewModel.HasErrors)
             return Error(400, string.Join(", ", betViewModel.Errors));
