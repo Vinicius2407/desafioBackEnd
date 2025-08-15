@@ -1,4 +1,5 @@
 using Engine.Interfaces;
+using Engine.Services;
 using Engine.Singleton;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +24,7 @@ foreach (var type in serviceTypes)
 {
     builder.Services.AddScoped(type);
 }
+//builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 
 // Configuração da autenticação JWT
@@ -51,7 +53,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Desafio Back End", Version = "v1" });
-
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"Insira o token JWT: Bearer {token}",
@@ -61,7 +62,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT"
     });
-
+    c.SchemaFilter<EnumSchemaFilter>();
     c.OperationFilter<AddSecurityRequirement>();
 });
 

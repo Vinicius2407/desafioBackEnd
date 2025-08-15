@@ -20,4 +20,22 @@ public class TransactionController : ProtectedController
         var response = new PaginationResponse<TransactionViewModel>(itemListPagined, itemListPagined.ToList());
         return response;
     }
+
+    [HttpPost]
+    [Route("movement")]
+    public async Task<ActionResult<TransactionViewModel>> CreateMovementAsync([FromBody] CreateTransactionDto withdrawTransactionDto)
+    {
+        var errors = ValidadeDataAnnotations<CreateTransactionDto>(withdrawTransactionDto);
+
+        if (errors.Any())
+            return Error(400, string.Join(", ", errors));
+
+        withdrawTransactionDto.UserId = AuthenticatedUserId;
+        var transactionViewModel = await _transactionService.CreateMovementAsync(withdrawTransactionDto);
+
+        if (transactionViewModel.HasErrors)
+            return Error(400, string.Join(", ", transactionViewModel.Errors));
+
+        return transactionViewModel;
+    }
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Models.DTOs.Bet;
 using Models.DTOs.Transaction;
 using Models.Model;
+using Models.Helpers;
 using X.PagedList;
 using X.PagedList.Extensions;
 
@@ -53,6 +54,32 @@ public class TransactionService : IService
             return new TransactionViewModel { Errors = new List<string> { "Impossivel criar objeto null" } };
 
         return await SaveChangesAsync(createTransaction);
+    }
+
+    public async Task<TransactionViewModel> CreateMovementAsync(CreateTransactionDto createTransactionDto)
+    {
+        var validationList = new List<Enumerators.TransactionType> { Enumerators.TransactionType.DEPOSIT, Enumerators.TransactionType.WITHDRAW };
+
+        if (!validationList.Contains(createTransactionDto.Type))
+            return new TransactionViewModel { Errors = new List<string> { "Tipo de transação inválida. Deve ser um depósito ou uma retirada." } };
+
+        var wallet = await _context.Wallets.FirstOrDefaultAsync(x => x.UserId == createTransactionDto.UserId);
+        if (wallet == null)
+            return new TransactionViewModel { Errors = new List<string> { "Carteira não encontrada para o usuário." } };
+
+        if (createTransactionDto.Type == Enumerators.TransactionType.WITHDRAW && createTransactionDto.Amount > wallet.BalanceAvailable)
+            return new TransactionViewModel { Errors = new List<string> { "Saldo insuficiente para realizar o saque." } };
+
+        wallet.BalanceAvailable += createTransactionDto.Type == Enumerators.TransactionType.DEPOSIT ? createTransactionDto.Amount : -createTransactionDto.Amount;
+        var transaction = new Transaction
+        {
+            Amount = createTransactionDto.Amount,
+            Type = createTransactionDto.Type,
+            WalletId = wallet.Id,
+            Description = createTransactionDto.Type == Enumerators.TransactionType.DEPOSIT ? "Depósito na carteira" : "Saque de valor na carteira",
+        };
+
+        return await SaveChangesAsync(transaction);
     }
 
     private async Task<TransactionViewModel> SaveChangesAsync(Transaction transaction)
