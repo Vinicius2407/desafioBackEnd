@@ -69,7 +69,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-
+ 
 try
 {
     using var scope = app.Services.CreateScope();
